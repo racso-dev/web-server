@@ -1,4 +1,4 @@
-SRC					=				WebServer
+SRC				=			WebServer
 
 run: build
 	java $(SRC)
@@ -6,4 +6,9 @@ run: build
 build:
 	javac $(SRC).java
 
-.PHONY: all
+clean:
+	rm -rf conf/
+	find . -name "*.class" -type f -delete
+	find . -name "*.jar" -type f -delete
+
+.PHONY: run build clean
