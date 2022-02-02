@@ -1,0 +1,18 @@
+## Build WebServer
+# FROM openjdk:17-jdk-alpine as builder
+
+# WORKDIR /app
+# COPY ./* ./
+
+# RUN javac WebServer.java
+
+# # Run WebServer
+# FROM openjdk:17-jre-alpine
+
+# WORKDIR /app
+# COPY ./* ./
+# COPY --from=builder /app/WebServer ./
+
+# EXPOSE 8080
+
+# CMD [ "java WebServer" ]
