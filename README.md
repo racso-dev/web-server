@@ -21,4 +21,6 @@
 
 ### With docker
 
-TODO: add Dockerfile with volume mounting
+Clone the repo, then run `make docker-dev`, you will be spawned inside a shell
+where you can run `make` to test out the program.
+All changes to the code will be synced since the repo is mounted inside the
