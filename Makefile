@@ -3,9 +3,6 @@ SRC								=						WebServer
 DEV_DOCKERFILE		=						Dockerfile.dev
 DEV_DOCKER_NAME		=						web-server-finalsolution-dev:latest
 
-PROD_DOCKERFILE		=						Dockerfile.prod
-PROD_DOCKER_NAME	=						web-server-finalsolution:latest
-
 DOC_IN						=						documentation.md
 DOC_OUT						=						documentation.pdf
 
@@ -16,7 +13,6 @@ build:
 	javac $(SRC).java
 
 clean:
-	rm -rf conf/
 	find . -name "*.class" -type f -delete
 	find . -name "*.jar" -type f -delete
 
@@ -30,15 +26,6 @@ dev-docker: build-dev-docker
 	-v $(shell pwd):/root/web-server-finalsolution \
 	-p 8080:8080 \
 	$(DEV_DOCKER_NAME)
-
-# build-prod-docker:
-# 	docker build -f $(PROD_DOCKERFILE) . -t $(PROD_DOCKER_NAME)
-
-# prod-docker: build-prod-docker
-# 	docker run \
-# 	--rm \
-# 	-p 8080:8080 \
-# 	$(PROD_DOCKER_NAME)
 
 doc:
 	pandoc $(DOC_IN) -o $(DOC_OUT)
