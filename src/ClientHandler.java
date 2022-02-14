@@ -50,8 +50,7 @@ public class ClientHandler implements Runnable {
       line = input.readLine();
       System.out.println(line);
       lines.add(line);
-    // } while (!line.isEmpty());
-    } while (line == null);
+    } while (!line.isEmpty());
     parseRoute(lines, output);
   }
 
