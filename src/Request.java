@@ -8,10 +8,10 @@ import java.util.Date;
 // It is used by the server to handle the requests
 // It is also used by the client to send the requests to the server
 public class Request {
+    private String clientIp;
     private String method;
     private String uri;
     private String version;
-    private String path;
     private String host;
     private String userAgent;
     private String accept;
@@ -25,13 +25,13 @@ public class Request {
     private String body;
     private ArrayList<String> requestParts;
 
-    public Request(ArrayList<String> requestParts) {
+    public Request(ArrayList<String> requestParts, String clientIp) {
         this.requestParts = requestParts;
+        this.clientIp = clientIp;
         String[] requestLine = requestParts.get(0).split(" ");
         this.method = requestLine[0];
         this.uri = requestLine[1];
         this.version = requestLine[2];
-        this.path = uri.substring(1);
         for (int i = 1; i < requestParts.size(); i++) {
             String[] header = requestParts.get(i).split(": ");
             if (header[0].equals("Host")) {
@@ -62,6 +62,9 @@ public class Request {
     }
 
     // Getters
+    public String getClientIp() {
+        return clientIp;
+    }
     public String getMethod() {
         return method;
     };
@@ -107,12 +110,4 @@ public class Request {
     public ArrayList<String> getRequestParts() {
         return requestParts;
     };
-
-    // Logger
-    public void log() {
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("d/MMM/YYYY:H:m:s Z");
-        String message = String.format("%s - - [%s] %s - -", method, dateFormat.format(new Date()), String.format("\"%s %s %s\"", method, uri, version));
-        System.out.println(message);
-    }
 }
