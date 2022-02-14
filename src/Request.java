@@ -23,6 +23,7 @@ public class Request {
     private String contentLength;
     private String cookie;
     private String body;
+    private String queryString;
     private ArrayList<String> requestParts;
 
     public Request(ArrayList<String> requestParts, String clientIp) {
@@ -32,6 +33,7 @@ public class Request {
         this.method = requestLine[0];
         this.uri = requestLine[1];
         this.version = requestLine[2];
+        this.queryString = this.uri.contains("?") ? this.uri.split("?")[1] : "";
         for (int i = 1; i < requestParts.size(); i++) {
             String[] header = requestParts.get(i).split(": ");
             if (header[0].equals("Host")) {
@@ -109,5 +111,8 @@ public class Request {
     };
     public ArrayList<String> getRequestParts() {
         return requestParts;
+    };
+    public String getQueryString() {
+        return queryString;
     };
 }
