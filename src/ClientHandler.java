@@ -17,53 +17,83 @@ public class ClientHandler implements Runnable {
     this.clientSocket = clientSocket;
   }
 
-  private void handleGetRequest(ArrayList<String> lines, OutputStream output) {
-    try {
-      output.write(("HTTP/1.1 200 OK\n\n<h1>salut coucou</h1>\n\r").getBytes());
-
-    } catch (IOException e) {
-
-    }
+  private void handleHeadRequest(Request request, Response response) {
+    response.setStatusCode("200");
+    response.setBody("<h1>HEAD REQUEST</h1>");
+    Logger.log(request, response);
+    response.send();
+  }
+  private void handleGetRequest(Request request, Response response) {
+    response.setStatusCode("200");
+    response.setBody("<h1>GET REQUEST</h1>");
+    Logger.log(request, response);
+    response.send();
+  }
+  private void handlePostRequest(Request request, Response response) {
+    response.setStatusCode("201");
+    response.setBody("<h1>POST REQUEST</h1>");
+    Logger.log(request, response);
+    response.send();
+  }
+  private void handlePutRequest(Request request, Response response) {
+    response.setStatusCode("200");
+    response.setBody("<h1>PUT REQUEST</h1>");
+    Logger.log(request, response);
+    response.send();
+  }
+  private void handleDeleteRequest(Request request, Response response) {
+    response.setStatusCode("204");
+    response.setBody("<h1>DELETE REQUEST</h1>");
+    Logger.log(request, response);
   }
 
 
-  private void parseRoute(ArrayList<String> lines, OutputStream output) {
-    String[] requestParts = lines.get(0).split("\\s+");
-    Request request = new Request(lines);
-    request.log();
-    if (requestParts.length == 3) {
-      if (requestParts[0].equals("GET")) {
-        handleGetRequest(lines, output);
-      } else if (requestParts[0].equals("POST")) {
-
-      }
+  private void processRequest(Request request, Response response) throws IOException{
+    switch (request.getMethod()) {    
+      case "GET":
+        handleGetRequest(request, response);
+        break;
+    
+      case "POST":
+        handlePostRequest(request, response);
+        break;
+    
+      case "PUT":
+        handlePutRequest(request, response);
+        break;
+    
+      case "DELETE":
+        handleDeleteRequest(request, response);
+        break;
+    
+      default:
+        handleHeadRequest(request, response);
+        break;
     }
-    // if (parts[0].equals("GET") && parts.length == 3) {
-    //   // Path
-    // }
   }
 
-  private void parseRequest(BufferedReader input, OutputStream output) throws IOException {
+  private ArrayList<String> parseRequest(BufferedReader input) throws IOException {
     String line;
     ArrayList<String> lines = new ArrayList<String>();
 
     do {
       line = input.readLine();
-      // System.out.println(line);
       lines.add(line);
     } while (!line.isEmpty());
-    parseRoute(lines, output);
+    return lines;
   }
 
   @Override
   public void run() {
     try {
       BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-      OutputStream output = clientSocket.getOutputStream();
-
-      parseRequest(input, output);
+      String ip = clientSocket.getRemoteSocketAddress().toString();
+      Request request = new Request(parseRequest(input), ip);
+      Response response = new Response(request.getContentType(), request.getContentLength(), clientSocket.getOutputStream());
+      processRequest(request, response);
       clientSocket.close();
     } catch (IOException exception) {
+      exception.printStackTrace();
     }
   }
 
