@@ -29,7 +29,8 @@ public class ClientHandler implements Runnable {
 
   private void parseRoute(ArrayList<String> lines, OutputStream output) {
     String[] requestParts = lines.get(0).split("\\s+");
-
+    Request request = new Request(lines);
+    request.log();
     if (requestParts.length == 3) {
       if (requestParts[0].equals("GET")) {
         handleGetRequest(lines, output);
@@ -48,7 +49,7 @@ public class ClientHandler implements Runnable {
 
     do {
       line = input.readLine();
-      System.out.println(line);
+      // System.out.println(line);
       lines.add(line);
     } while (!line.isEmpty());
     parseRoute(lines, output);
