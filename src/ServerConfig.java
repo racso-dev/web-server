@@ -16,7 +16,7 @@ class ScriptAlias {
   public Path path;
 }
 
-public class ServerConf {
+public class ServerConfig {
   private Path confPath;
 
   private Path documentRoot;
@@ -42,8 +42,9 @@ public class ServerConf {
   };
 
 
-  public ServerConf(Path path) {
+  public ServerConfig(Path path) throws IOException {
     this.confPath = path;
+    this.parseFile();
   }
 
   void parseDouble(String[] parts) {
@@ -66,7 +67,7 @@ public class ServerConf {
   //   if ()
   // }
 
-  public void parseFile() throws IOException {
+  private void parseFile() throws IOException {
     try (Stream<String> lines = Files.lines(confPath)) {
       lines.forEach(line -> {
         if (!line.startsWith("#") && !line.isEmpty()) {
@@ -83,21 +84,24 @@ public class ServerConf {
     }
   }
 
-
-  // public HashMap<String, Path> getAliases() {
-  // }
-
-  // public ScriptAlias getScriptAlias() {
-  // }
-
-  // public Path getLogFile() {
-  // }
-
-  // public int getPort() {
-  // }
-
   public Path getDocumentRoot() {
     return this.documentRoot;
+  }
+
+  public int getPort() {
+    return this.port;
+  }
+
+  public Path getLogFile() {
+    return this.logFile;
+  }
+
+  public ScriptAlias getScriptAlias() {
+    return this.scriptAlias;
+  }
+
+  public HashMap<String, Path> getAliases() {
+    return this.aliases;
   }
 
 }
