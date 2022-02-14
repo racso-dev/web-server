@@ -1,12 +1,13 @@
 package src;
 
+import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 
 public class Response {
-    private OutputStream output;
+    private BufferedWriter output;
     private String server;
     private String date;
     private String contentType;
@@ -30,7 +31,7 @@ public class Response {
         this.contentLength = String.format("%d", this.body.length());
     }
 
-    public Response(String contentType, String contentLength, OutputStream output) {
+    public Response(String contentType, String contentLength, BufferedWriter output) {
         this.output = output;
         this.server = "ANTOINE-RENIER";
         SimpleDateFormat dateFormat = new SimpleDateFormat("E, d MMM YYYY H:m:s z");
@@ -69,25 +70,25 @@ public class Response {
     }
 
     // Setters
-    public void setServer(String server) {
+    public Response setServer(String server) {
         this.server = server;
+        return this;
     }
 
-    public void setDate(String date) {
-        this.date = date;
-    }
-
-    public void setContentType(String contentType) {
+    public Response setContentType(String contentType) {
         this.contentType = contentType;
+        return this;
     }
 
-    public void setBody(String body) {
+    public Response setBody(String body) {
         this.body = body;
         this.setContentLength();
+        return this;
     }
 
-    public void setStatusCode(String statusCode) {
+    public Response setStatusCode(String statusCode) {
         this.statusCode = statusCode;
+        return this;
     }
 
     public void send() {
@@ -101,7 +102,9 @@ public class Response {
         response += "\r\n";
         response += body;
         try {
-            output.write(response.getBytes());
+            output.write(response);
+            output.newLine();
+            output.flush();
         } catch (Exception e) {
             e.printStackTrace();
         }
