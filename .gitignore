@@ -2,3 +2,5 @@
 *.jar
 server/
 conf/httpd.test.conf
+
+logs/
