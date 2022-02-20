@@ -31,13 +31,14 @@ public class Response {
         this.contentLength = String.format("%d", this.body.length());
     }
 
-    public Response(String contentType, String contentLength, BufferedWriter output) {
+    public Response(BufferedWriter output) {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("E, d MMM YYYY H:m:s z");
+
         this.output = output;
         this.server = "ANTOINE-RENIER";
-        SimpleDateFormat dateFormat = new SimpleDateFormat("E, d MMM YYYY H:m:s z");
         this.date = dateFormat.format(new Date());
-        this.contentType = contentType;
-        this.contentLength = contentLength;
+        // this.contentType = contentType;
+        // this.contentLength = contentLength;
     }
 
     // Getters
@@ -102,6 +103,7 @@ public class Response {
 
     public void send() {
         String response = String.format("HTTP/%s %s %s\r\n", version, statusCode, statusCodes.get(statusCode));
+
         response += String.format("Date: %s\r\n", date);
         response += String.format("Server: %s\r\n", server);
         response += String.format("Content-Type: %s\r\n", contentType);
