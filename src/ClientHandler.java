@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class ClientHandler implements Runnable {
       if (request.getMethod().equals("GET")) {
         byte[] bytes = Files.readAllBytes(Path.of(this.config.getDocumentRoot().toString() + request.getUri()));
 
-        response.setBody(String.valueOf(bytes))
+        response.setBody(new String(bytes, StandardCharsets.UTF_8))
           .setStatusCode(Response.statusCodes.get("OK"));
       }
 
