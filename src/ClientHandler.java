@@ -47,9 +47,8 @@ public class ClientHandler implements Runnable {
   private void processRequest(Request request, Response response) throws IOException{
     if (request.getUri().startsWith(config.getScriptAlias().route)) {
       String[] command = request.getUri().split("/");
-      String scriptName = command[command.length - 1];
-
-      ProcessBuilder builder = new ProcessBuilder(config.getScriptAlias() + scriptName);
+      String scriptPath = config.getScriptAlias().path + "/" + command[command.length - 1];
+      ProcessBuilder builder = new ProcessBuilder(scriptPath);
       Map<String, String> env = builder.environment();
       for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
         env.put("HTTP_" + entry.getKey(), entry.getValue());
@@ -90,6 +89,7 @@ public class ClientHandler implements Runnable {
           }
           reader.close();
         } catch (IOException e) {
+          e.printStackTrace();
           response.setStatusCode("500").setBody("<h1>Internal Server Error</h1>").send();
           return;
         }
