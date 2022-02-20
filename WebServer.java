@@ -15,8 +15,9 @@ class WebServer {
 
   public static void main(String[] args) throws IOException {
     ServerConfig config = new ServerConfig(CONF_PATH);
+
     ExecutorService threadPool = Executors.newFixedThreadPool(10);
-    ServerSocket serverSocket = new ServerSocket(config.getPort() | DEFAULT_PORT);
+    ServerSocket serverSocket = new ServerSocket(config.getPort() == -1 ? DEFAULT_PORT : config.getPort());
     boolean closeServer = false;
 
     while (!closeServer) {
