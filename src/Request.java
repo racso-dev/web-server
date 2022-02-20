@@ -53,6 +53,7 @@ public class Request {
     public Request(BufferedReader input, String clientIp) throws IOException {
         String line;
 
+        this.clientIp = clientIp;
         while (true) {
             line = input.readLine();
             if (line == null || line.isEmpty()) {
@@ -63,16 +64,20 @@ public class Request {
         }
         this.parseRequestLine();
         this.parseHeaders();
-        this.parseBody(input);
-        // this.logHeaders();
+        this.logHeaders();
+        // System.out.println(this.method);
+        if (!this.method.equals("GET")) {
+            this.parseBody(input);
+        }
+        // System.out.println(this.body);
     }
 
-    // public void logHeaders() {
-    //     System.out.println("HEADERS:");
-    //     this.headers.entrySet().forEach(entry -> {
-    //         System.out.println(entry.getKey() + " " + entry.getValue());
-    //     });
-    // }
+    public void logHeaders() {
+        System.out.println("HEADERS:");
+        this.headers.entrySet().forEach(entry -> {
+            System.out.println(entry.getKey() + " " + entry.getValue());
+        });
+    }
     // Getters
     public String getClientIp() {
         return clientIp;

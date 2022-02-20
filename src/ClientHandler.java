@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 
 public class ClientHandler implements Runnable {
@@ -42,12 +44,19 @@ public class ClientHandler implements Runnable {
   //   Logger.log(request, response, config);
   // }
 
-
   private void processRequest(Request request, Response response) throws IOException {
     if (request.getUri().startsWith(config.getScriptAlias().route)) {
       // TODO: write cgi code
     } else {
+      if (request.getMethod().equals("GET")) {
+        byte[] bytes = Files.readAllBytes(Path.of(this.config.getDocumentRoot().toString() + request.getUri()));
 
+        response.setBody(String.valueOf(bytes))
+          .setStatusCode(Response.statusCodes.get("OK"));
+      }
+
+      Logger.log(request, response, config);
+      response.send();
     }
   }
 
@@ -56,7 +65,7 @@ public class ClientHandler implements Runnable {
     try {
       BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
       BufferedWriter output = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
-      Request request = new Request(input, clientIp);
+      Request request = new Request(input, this.clientIp);
       Response response = new Response(output);
 
       processRequest(request, response);
