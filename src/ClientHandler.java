@@ -69,10 +69,8 @@ public class ClientHandler implements Runnable {
       String line;
       ArrayList<String> lines = new ArrayList<String>();
 
-      do {
-        line = reader.readLine();
+      while ((line = reader.readLine()) != null)
         lines.add(line);
-      } while (!line.isEmpty());
       response.setBody(String.join("\r\n", lines)).setStatusCode("200").send();
     } else {
       // Check if the file exists
