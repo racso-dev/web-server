@@ -3,6 +3,7 @@ package src;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 
 // Class that handles the client requests and stores all the metadata of the requestParts
 // It is used by the server to handle the requests
@@ -12,21 +13,15 @@ public class Request {
     private String method;
     private String uri;
     private String version;
-    private String host;
-    private String userAgent;
-    private String accept;
-    private String acceptEncoding;
-    private String acceptLanguage;
-    private String acceptCharset;
-    private String connection;
-    private String contentType;
-    private String contentLength;
-    private String cookie;
     private String body;
     private String queryString;
+    private HashMap<String, String> headers;
     private ArrayList<String> requestParts;
 
     public Request(ArrayList<String> requestParts, String clientIp) {
+        // bodyLines.forEach(entry -> {
+        //     System.out.println("BODY LINE =" + entry);
+        // });
         this.requestParts = requestParts;
         this.clientIp = clientIp;
         String[] requestLine = requestParts.get(0).split(" ");
@@ -34,35 +29,21 @@ public class Request {
         this.uri = requestLine[1];
         this.version = requestLine[2];
         this.queryString = this.uri.contains("?") ? this.uri.split("?")[1] : "";
-        for (int i = 1; i < requestParts.size(); i++) {
-            String[] header = requestParts.get(i).split(": ");
-            if (header[0].equals("Host")) {
-                host = header[1];
-            } else if (header[0].equals("User-Agent")) {
-                userAgent = header[1];
-            } else if (header[0].equals("Accept")) {
-                accept = header[1];
-            } else if (header[0].equals("Accept-Encoding")) {
-                acceptEncoding = header[1];
-            } else if (header[0].equals("Accept-Language")) {
-                acceptLanguage = header[1];
-            } else if (header[0].equals("Accept-Charset")) {
-                acceptCharset = header[1];
-            } else if (header[0].equals("Connection")) {
-                connection = header[1];
-            } else if (header[0].equals("Content-Type")) {
-                contentType = header[1];
-            } else if (header[0].equals("Content-Length")) {
-                contentLength = header[1];
-            } else if (header[0].equals("Cookie")) {
-                cookie = header[1];
-            }
+        // Set headers
+        this.headers = new HashMap<String, String>();
+        for (int i = 1; i < requestParts.size() - 1; i++) {
+            String[] parts = requestParts.get(i).split(": ");
+            this.headers.put(parts[0], parts[1]);
         }
-        // if (requestParts.length > 1) {
-        //     body = requestParts;
-        // }
+        this.logHeaders();
     }
 
+    public void logHeaders() {
+        System.out.println("HEADERS:");
+        this.headers.entrySet().forEach(entry -> {
+            System.out.println(entry.getKey() + " " + entry.getValue());
+        });
+    }
     // Getters
     public String getClientIp() {
         return clientIp;
@@ -77,34 +58,34 @@ public class Request {
         return version;
     };
     public String getHost() {
-        return host;
+        return this.headers.get("Host");
     };
     public String getUserAgent() {
-        return userAgent;
+        return this.headers.get("User-Agent");
     };
     public String getAccept() {
-        return accept;
+        return this.headers.get("Accept");
     };
     public String getAcceptEncoding() {
-        return acceptEncoding;
+        return this.headers.get("Accept-Encoding");
     };
     public String getAcceptLanguage() {
-        return acceptLanguage;
+        return this.headers.get("Accept-Language");
     };
     public String getAcceptCharset() {
-        return acceptCharset;
+        return this.headers.get("Accept-Charset");
     };
     public String getConnection() {
-        return connection;
+        return this.headers.get("Connection");
     };
     public String getContentType() {
-        return contentType;
+        return this.headers.get("Content-Type");
     };
     public String getContentLength() {
-        return contentLength;
+        return this.headers.get("Content-Length");
     };
     public String getCookie() {
-        return cookie;
+        return this.headers.get("Cookie");
     };
     public String getBody() {
         return body;
@@ -114,5 +95,14 @@ public class Request {
     };
     public String getQueryString() {
         return queryString;
+    };
+
+    public HashMap<String, String> getHeaders() {
+        return headers;
+    };
+
+    public Request setBody(String body) {
+        this.body = body;
+        return this;
     };
 }

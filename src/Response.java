@@ -1,7 +1,6 @@
 package src;
 
 import java.io.BufferedWriter;
-import java.io.OutputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -13,18 +12,19 @@ public class Response {
     private String contentType;
     private String contentLength;
     private String body = "";
+    private HashMap<String, String> headers = new HashMap<String, String>();
     private final String version = "1.1";
     private String statusCode;
-    private HashMap<String, String> statusCodes = new HashMap<String,String>() {{
-        put("200", "OK");
-        put("201", "Created");
-        put("204", "No Content");
-        put("304", "Not Modified");
-        put("400", "Bad Request");
-        put("401", "Unauthorized");
-        put("403", "Forbidden");
-        put("404", "Not Found");
-        put("500", "Internal Server Error");
+    public static HashMap<String, String> statusCodes = new HashMap<String,String>() {{
+        put("OK", "200");
+        put("Created", "201");
+        put("No Content", "204");
+        put("Not Modified", "304");
+        put("Bad Request", "400");
+        put("Unauthorized", "401");
+        put("Forbidden", "403");
+        put("Not Found", "404");
+        put("Internal Server Error", "500");
     }};
 
     private void setContentLength() {
@@ -69,6 +69,10 @@ public class Response {
         return statusCode;
     }
 
+    public HashMap<String, String> getHeaders() {
+        return headers;
+    }
+
     // Setters
     public Response setServer(String server) {
         this.server = server;
@@ -88,6 +92,11 @@ public class Response {
 
     public Response setStatusCode(String statusCode) {
         this.statusCode = statusCode;
+        return this;
+    }
+
+    public Response setHeaders(String key, String value) {
+        this.headers.put(key, value);
         return this;
     }
 
