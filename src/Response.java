@@ -43,8 +43,6 @@ public class Response {
         this.server = "ANTOINE-RENIER";
         this.date = dateFormat.format(new Date());
         this.clientSocket = clientSocket;
-        // this.contentType = contentType;
-        // this.contentLength = contentLength;
     }
 
     // Getters
@@ -109,18 +107,17 @@ public class Response {
 
     public void send() throws IOException {
         OutputStream out = clientSocket.getOutputStream();
-        out.write(String.format("HTTP/%s %s %s\n", version, statusCode, statusCodes.get(statusCode)).getBytes());
+        out.write(String.format("HTTP/%s %s %s%n", version, statusCode, statusCodes.get(statusCode)).getBytes());
 
-        out.write(String.format("Date: %s\n", date).getBytes());
-        out.write(String.format("Server: %s\n", server).getBytes());
-        out.write(String.format("Content-Type: %s\n", contentType).getBytes());
-        out.write(String.format("Connection: close\n").getBytes());
+        out.write(String.format("Date: %s%n", date).getBytes());
+        out.write(String.format("Server: %s%n", server).getBytes());
+        out.write(String.format("Content-Type: %s%n", contentType).getBytes());
+        out.write(String.format("Connection: close%n").getBytes());
         if (body.length > 0) {
-            out.write(String.format("Content-Length: %s\n\n", contentLength).getBytes());
+            out.write(String.format("Content-Length: %s%n%n", contentLength).getBytes());
         }
         out.write(body);
 
-        // System.out.println(body);
         try {
             out.write("\r\n".getBytes());
             out.flush();

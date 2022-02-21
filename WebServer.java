@@ -13,13 +13,10 @@ import java.util.concurrent.Executors;
 class WebServer {
   public static final int DEFAULT_PORT = 8080;
   public static final Path CONF_PATH = Path.of("./conf/httpd.conf");
+  public static final Path MIME_PATH = Path.of("./conf/mime.types");
 
   public static void main(String[] args) throws IOException {
-    ServerConfig config = new ServerConfig(CONF_PATH);
-    Path path = Path.of("./conf/mime.types");
-    MimeParser mimeParser = new MimeParser(path);
-
-    HashMap<String, String> mimeMap = mimeParser.parseFile();
+    ServerConfig config = new ServerConfig(CONF_PATH, MIME_PATH);
 
     ExecutorService threadPool = Executors.newFixedThreadPool(10);
     ServerSocket serverSocket = new ServerSocket(config.getPort() == -1 ? DEFAULT_PORT : config.getPort());
@@ -28,7 +25,7 @@ class WebServer {
     while (!closeServer) {
       Socket clientSocket = null;
       clientSocket = serverSocket.accept();
-      threadPool.execute(new ClientHandler(clientSocket, config, mimeMap));
+      threadPool.execute(new ClientHandler(clientSocket, config));
     }
     serverSocket.close();
 

@@ -22,6 +22,8 @@ public class ServerConfig {
   private ScriptAlias scriptAlias = new ScriptAlias();
   private HashMap<String, Path> aliases = new HashMap<String, Path>();
 
+  private HashMap<String, String> mimeTypes = new HashMap<String, String>();
+
   private static final ArrayList<String> doubles = new ArrayList<String>() {
     {
       add("DocumentRoot");
@@ -38,8 +40,10 @@ public class ServerConfig {
   };
 
 
-  public ServerConfig(Path path) throws IOException {
-    this.confPath = path;
+  public ServerConfig(Path confPath, Path mimePath) throws IOException {
+    this.confPath = confPath;
+    MimeParser mimeParser = new MimeParser(mimePath);
+    this.mimeTypes = mimeParser.parseFile();
     this.parseFile();
   }
 
@@ -130,6 +134,10 @@ public class ServerConfig {
 
   public HashMap<String, Path> getAliases() {
     return this.aliases;
+  }
+
+  public HashMap<String, String> getMimeTypes() {
+    return this.mimeTypes;
   }
 
 }
