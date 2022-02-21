@@ -30,61 +30,66 @@ public class ClientHandler implements Runnable {
   }
 
   // private void handleHeadRequest(Request request, Response response) {
-  //   response.setStatusCode(Response.statusCodes.get("OK")).setBody("<h1>HEAD REQUEST</h1>").send();
-  //   Logger.log(request, response, config);
+  // response.setStatusCode(Response.statusCodes.get("OK")).setBody("<h1>HEAD
+  // REQUEST</h1>").send();
+  // Logger.log(request, response, config);
   // }
   // private void handleGetRequest(Request request, Response response) {
-  //   response.setStatusCode(Response.statusCodes.get("OK")).setBody("<h1>GET REQUEST</h1>").send();
-  //   Logger.log(request, response, config);
+  // response.setStatusCode(Response.statusCodes.get("OK")).setBody("<h1>GET
+  // REQUEST</h1>").send();
+  // Logger.log(request, response, config);
   // }
   // private void handlePostRequest(Request request, Response response) {
-  //   response.setStatusCode(Response.statusCodes.get("Created")).setBody("<h1>POST REQUEST</h1>").send();
-  //   Logger.log(request, response, config);
+  // response.setStatusCode(Response.statusCodes.get("Created")).setBody("<h1>POST
+  // REQUEST</h1>").send();
+  // Logger.log(request, response, config);
   // }
   // private void handlePutRequest(Request request, Response response) {
-  //   response.setStatusCode(Response.statusCodes.get("OK")).setBody("<h1>PUT REQUEST</h1>").send();
-  //   Logger.log(request, response, config);
+  // response.setStatusCode(Response.statusCodes.get("OK")).setBody("<h1>PUT
+  // REQUEST</h1>").send();
+  // Logger.log(request, response, config);
   // }
   // private void handleDeleteRequest(Request request, Response response) {
-  //   response.setStatusCode(Response.statusCodes.get("No Content")).setBody("<h1>DELETE REQUEST</h1>").send();
-  //   Logger.log(request, response, config);
+  // response.setStatusCode(Response.statusCodes.get("No
+  // Content")).setBody("<h1>DELETE REQUEST</h1>").send();
+  // Logger.log(request, response, config);
   // }
 
   private void handleCgi(Request request, Response response) throws IOException {
     String path = this.config.getScriptAlias().path + request.getUri().replace(config.getScriptAlias().route, "/");
-      char[] output = new char[1];
-      String result = "";
-      int bytesRead = 0;
-      ProcessBuilder builder = new ProcessBuilder(path);
-      builder.redirectErrorStream(true);
-      for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
-        builder.environment().put("HTTP_" + entry.getKey(), entry.getValue());
-      }
-      builder.environment().put("QUERY_STRING", request.getQueryString());
-      builder.environment().put("SERVER_PROTOCOL", "HTTP/" + request.getVersion());
+    char[] output = new char[1];
+    String result = "";
+    int bytesRead = 0;
+    ProcessBuilder builder = new ProcessBuilder(path);
+    builder.redirectErrorStream(true);
+    for (Map.Entry<String, String> entry : request.getHeaders().entrySet()) {
+      builder.environment().put("HTTP_" + entry.getKey(), entry.getValue());
+    }
+    builder.environment().put("QUERY_STRING", request.getQueryString());
+    builder.environment().put("SERVER_PROTOCOL", "HTTP/" + request.getVersion());
 
-      Process process = builder.start();
-      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
-      BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-      if ((request.getMethod().equals("PUT") || request.getMethod().equals("POST")) &&
+    Process process = builder.start();
+    BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
+    BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+    if ((request.getMethod().equals("PUT") || request.getMethod().equals("POST")) &&
         !request.getBody().isEmpty()) {
-          writer.write(request.getBody());
-          writer.flush();
-          writer.close();
-        }
-      while (true) {
-        bytesRead = reader.read(output);
-        if (bytesRead == -1) {
-          break;
-        } else {
-          result += new String(output);
-        }
+      writer.write(request.getBody());
+      writer.flush();
+      writer.close();
+    }
+    while (true) {
+      bytesRead = reader.read(output);
+      if (bytesRead == -1) {
+        break;
+      } else {
+        result += new String(output);
       }
-      response.setBody(result.getBytes())
+    }
+    response.setBody(result.getBytes())
         .setStatusCode(Response.statusCodes.get("OK"))
         .setContentType(this.config.getMimeTypes().get("html"));
-      Logger.log(request, response, config);
-      response.send();
+    Logger.log(request, response, config);
+    response.send();
 
   }
 
@@ -102,18 +107,18 @@ public class ClientHandler implements Runnable {
       extension = path.substring(path.lastIndexOf(".") + 1);
 
     response.setBody(bytes)
-      .setStatusCode(Response.statusCodes.get("OK"))
-      .setContentType(this.config.getMimeTypes().get(extension));
+        .setStatusCode(Response.statusCodes.get("OK"))
+        .setContentType(this.config.getMimeTypes().get(extension));
   }
 
   private void handleAliases(Request request, Response response) throws IOException {
     Optional<String> alias = config.getAliases().keySet().stream()
-      .filter(uri -> request.getUri().startsWith(uri))
-      .findFirst();
+        .filter(uri -> request.getUri().startsWith(uri))
+        .findFirst();
     if (alias.isPresent()) {
       request.setUri(request.getUri().replace(
-        alias.get(), config.getAliases().get(alias.get()).toString() + "/"
-      ).replace(config.getDocumentRoot().toString(), ""));
+          alias.get(), config.getAliases().get(alias.get()).toString() + "/")
+          .replace(config.getDocumentRoot().toString(), ""));
     }
 
     if (Files.isDirectory(Path.of(this.config.getDocumentRoot().toString() + request.getUri()))) {

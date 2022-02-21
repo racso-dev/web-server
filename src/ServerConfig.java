@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
-
 public class ServerConfig {
   private Path confPath;
 
@@ -38,7 +37,6 @@ public class ServerConfig {
     }
   };
 
-
   public ServerConfig(Path confPath, Path mimePath) throws IOException {
     this.confPath = confPath;
     MimeParser mimeParser = new MimeParser(mimePath);
@@ -51,7 +49,7 @@ public class ServerConfig {
 
     if (parts.length == 2) {
       if (parts[1].charAt(0) == '\"' &&
-      parts[1].charAt(parts[1].length() - 1) == '\"') {
+          parts[1].charAt(parts[1].length() - 1) == '\"') {
         String data = parts[1].substring(1, parts[1].length() - 1);
 
         result = data;
@@ -76,7 +74,7 @@ public class ServerConfig {
 
     if (parts.length == 3) {
       if (parts[1].charAt(0) == '\"' &&
-      parts[1].charAt(parts[1].length() - 1) == '\"') {
+          parts[1].charAt(parts[1].length() - 1) == '\"') {
         String data = parts[1].substring(1, parts[1].length() - 1);
 
         key = data;
@@ -84,7 +82,7 @@ public class ServerConfig {
         key = parts[1];
       }
       if (parts[2].charAt(0) == '\"' &&
-      parts[2].charAt(parts[2].length() - 1) == '\"') {
+          parts[2].charAt(parts[2].length() - 1) == '\"') {
         String data = parts[2].substring(1, parts[2].length() - 1);
 
         value = data;
@@ -154,8 +152,8 @@ public class ServerConfig {
     return this.serverRoot;
   }
 
-public ArrayList<String> getDirectoryIndexes() {
-	return this.directoryIndexes;
-}
+  public ArrayList<String> getDirectoryIndexes() {
+    return this.directoryIndexes;
+  }
 
 }

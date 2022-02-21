@@ -28,9 +28,5 @@ class WebServer {
       threadPool.execute(new ClientHandler(clientSocket, config));
     }
     serverSocket.close();
-
-
-    // System.out.println(mimeMap.toString());
-
   }
 }

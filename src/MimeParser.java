@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.stream.Stream;
 
-
 public class MimeParser extends Parser {
   public MimeParser(Path path) {
     super(path);
