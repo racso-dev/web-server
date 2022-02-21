@@ -37,8 +37,6 @@ public class Response {
         this.output = output;
         this.server = "ANTOINE-RENIER";
         this.date = dateFormat.format(new Date());
-        // this.contentType = contentType;
-        // this.contentLength = contentLength;
     }
 
     // Getters
@@ -102,15 +100,13 @@ public class Response {
     }
 
     public void send() {
-        String response = String.format("HTTP/%s %s %s\r\n", version, statusCode, statusCodes.get(statusCode));
+        String response = String.format("HTTP/%s %s %s%n", version, statusCode, statusCodes.get(statusCode));
 
-        response += String.format("Date: %s\r\n", date);
-        response += String.format("Server: %s\r\n", server);
-        response += String.format("Content-Type: %s\r\n", contentType);
-        if (body.length() > 0) {
-            response += String.format("Content-Length: %s\r\n", contentLength);
-        }
-        response += "\r\n";
+        response += String.format("Date: %s%n", date);
+        response += String.format("Server: %s%n", server);
+        response += String.format("Content-Type: %s%n", contentType);
+        if (body.length() > 0)
+            response += String.format("Content-Length: %s%n%n", contentLength);
         response += body;
         try {
             output.write(response);
