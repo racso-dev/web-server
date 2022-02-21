@@ -40,7 +40,7 @@ public class ClientHandler implements Runnable {
     String extension = null;
 
     if (!Files.exists(Path.of(path))) {
-      response.setStatusCode(Response.statusCodes.get("Not Found")).setBody("<h1>404 Not Found</h1>".getBytes());
+      response.setStatusCode("Not Found").setBody("<h1>404 Not Found</h1>".getBytes());
       return;
     }
     byte[] bytes = Files.readAllBytes(Path.of(path));
@@ -49,7 +49,7 @@ public class ClientHandler implements Runnable {
       extension = path.substring(path.lastIndexOf(".") + 1);
 
     response.setBody(bytes)
-        .setStatusCode(Response.statusCodes.get("OK"))
+        .setStatusCode("OK")
         .setContentType(this.config.getMimeTypes().get(extension));
     Logger.log(request, response, config);
   }
@@ -62,14 +62,14 @@ public class ClientHandler implements Runnable {
     String path = this.config.getDocumentRoot().toString() + request.getUri();
 
     if (request.getBody() == null || request.getBody().isEmpty()) {
-      response.setStatusCode(Response.statusCodes.get("Bad Request"));
+      response.setStatusCode("Bad Request");
       return;
     }
     PrintWriter writer = new PrintWriter(path, "UTF-8");
     writer.write(request.getBody());
     writer.flush();
     writer.close();
-    response.setStatusCode(Response.statusCodes.get("Created"));
+    response.setStatusCode("Created");
   }
 
   private void handleDeleteRequest(Request request, Response response)  throws IOException{
@@ -81,7 +81,7 @@ public class ClientHandler implements Runnable {
     }
     Files.delete(Path.of(path));
 
-    response.setStatusCode(Response.statusCodes.get("No Content"));
+    response.setStatusCode("No Content");
     Logger.log(request, response, config);
   }
 
@@ -166,7 +166,7 @@ public class ClientHandler implements Runnable {
         }
       }
     } else {
-      response.setStatusCode(Response.statusCodes.get("Not Found")).setBody("<h1>404 Not Found</h1>".getBytes());
+      response.setStatusCode("Not Found").setBody("<h1>404 Not Found</h1>".getBytes());
     }
   }
 

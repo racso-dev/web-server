@@ -21,15 +21,15 @@ public class Response {
   private String statusCode;
   public static HashMap<String, String> statusCodes = new HashMap<String, String>() {
     {
-      put("OK", "200 OK");
-      put("Created", "201 Created");
-      put("No Content", "204 No Content");
-      put("Not Modified", "304 Not Modified");
-      put("Bad Request", "400 Bad Request");
-      put("Unauthorized", "401 Unauthorized");
-      put("Forbidden", "403 Forbidden");
-      put("Not Found", "404 Not Found");
-      put("Internal Server Error", "500 Internal Server Error");
+      put("OK", "200");
+      put("Created", "201");
+      put("No Content", "204");
+      put("Not Modified", "304");
+      put("Bad Request", "400");
+      put("Unauthorized", "401");
+      put("Forbidden", "403");
+      put("Not Found", "404");
+      put("Internal Server Error", "500");
     }
   };
 
@@ -105,7 +105,7 @@ public class Response {
 
   public void send() throws IOException {
     OutputStream out = clientSocket.getOutputStream();
-    out.write(String.format("HTTP/%s %s%n", version, statusCode).getBytes());
+    out.write(String.format("HTTP/%s %s%n", version, Response.statusCodes.get(statusCode) + " " + statusCode).getBytes());
 
     out.write(String.format("Date: %s%n", date).getBytes());
     out.write(String.format("Server: %s%n", server).getBytes());
