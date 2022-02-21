@@ -12,9 +12,10 @@ import java.util.concurrent.Executors;
 class WebServer {
   public static final int DEFAULT_PORT = 8080;
   public static final Path CONF_PATH = Path.of("./conf/httpd.conf");
+  public static final Path MIME_PATH = Path.of("./conf/mime.types");
 
   public static void main(String[] args) throws IOException {
-    ServerConfig config = new ServerConfig(CONF_PATH);
+    ServerConfig config = new ServerConfig(CONF_PATH, MIME_PATH);
 
     ExecutorService threadPool = Executors.newFixedThreadPool(10);
     ServerSocket serverSocket = new ServerSocket(config.getPort() == -1 ? DEFAULT_PORT : config.getPort());
