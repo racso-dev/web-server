@@ -9,6 +9,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,26 +35,55 @@ public class ClientHandler implements Runnable {
   // REQUEST</h1>").send();
   // Logger.log(request, response, config);
   // }
-  // private void handleGetRequest(Request request, Response response) {
-  // response.setStatusCode(Response.statusCodes.get("OK")).setBody("<h1>GET
-  // REQUEST</h1>").send();
-  // Logger.log(request, response, config);
-  // }
+  private void handleGetRequest(Request request, Response response) throws IOException {
+    String path = this.config.getDocumentRoot().toString() + request.getUri();
+    String extension = null;
+
+    if (!Files.exists(Path.of(path))) {
+      response.setStatusCode(Response.statusCodes.get("Not Found")).setBody("<h1>404 Not Found</h1>".getBytes());
+      return;
+    }
+    byte[] bytes = Files.readAllBytes(Path.of(path));
+
+    if (path.contains("."))
+      extension = path.substring(path.lastIndexOf(".") + 1);
+
+    response.setBody(bytes)
+        .setStatusCode(Response.statusCodes.get("OK"))
+        .setContentType(this.config.getMimeTypes().get(extension));
+    Logger.log(request, response, config);
+  }
   // private void handlePostRequest(Request request, Response response) {
   // response.setStatusCode(Response.statusCodes.get("Created")).setBody("<h1>POST
   // REQUEST</h1>").send();
   // Logger.log(request, response, config);
   // }
-  // private void handlePutRequest(Request request, Response response) {
-  // response.setStatusCode(Response.statusCodes.get("OK")).setBody("<h1>PUT
-  // REQUEST</h1>").send();
-  // Logger.log(request, response, config);
-  // }
-  // private void handleDeleteRequest(Request request, Response response) {
-  // response.setStatusCode(Response.statusCodes.get("No
-  // Content")).setBody("<h1>DELETE REQUEST</h1>").send();
-  // Logger.log(request, response, config);
-  // }
+  private void handlePutRequest(Request request, Response response) throws IOException {
+    String path = this.config.getDocumentRoot().toString() + request.getUri();
+
+    if (request.getBody() == null || request.getBody().isEmpty()) {
+      response.setStatusCode(Response.statusCodes.get("Bad Request"));
+      return;
+    }
+    PrintWriter writer = new PrintWriter(path, "UTF-8");
+    writer.write(request.getBody());
+    writer.flush();
+    writer.close();
+    response.setStatusCode(Response.statusCodes.get("Created"));
+  }
+
+  private void handleDeleteRequest(Request request, Response response)  throws IOException{
+    String path = this.config.getDocumentRoot().toString() + request.getUri();
+
+    if (!Files.exists(Path.of(path))) {
+      response.setStatusCode(Response.statusCodes.get("Not Found")).setBody("<h1>404 Not Found</h1>".getBytes());
+      return;
+    }
+    Files.delete(Path.of(path));
+
+    response.setStatusCode(Response.statusCodes.get("No Content"));
+    Logger.log(request, response, config);
+  }
 
   private void handleCgi(Request request, Response response) throws IOException {
     String path = this.config.getScriptAlias().path + request.getUri().replace(config.getScriptAlias().route, "/");
@@ -94,24 +124,31 @@ public class ClientHandler implements Runnable {
   }
 
   private void handleFiles(Request request, Response response) throws IOException {
-    String path = this.config.getDocumentRoot().toString() + request.getUri();
-    String extension = null;
-
-    if (!Files.exists(Path.of(path))) {
-      response.setStatusCode(Response.statusCodes.get("Not Found")).setBody("<h1>404 Not Found</h1>".getBytes());
-      return;
-    }
-    byte[] bytes = Files.readAllBytes(Path.of(path));
-
-    if (path.contains("."))
-      extension = path.substring(path.lastIndexOf(".") + 1);
-
-    response.setBody(bytes)
-        .setStatusCode(Response.statusCodes.get("OK"))
-        .setContentType(this.config.getMimeTypes().get(extension));
+        switch (request.getMethod()) {
+          case "GET":
+            this.handleGetRequest(request, response);
+            break;
+          case "POST":
+            break;
+          // case "HEAD":
+            
+          //   break;
+          case "PUT":
+            this.handlePutRequest(request, response);
+            break;
+          case "DELETE":
+            this.handleDeleteRequest(request, response);
+            break;
+        
+          default:
+            break;
+        }
   }
 
   private void handleAliases(Request request, Response response) throws IOException {
+    if (request.getMethod().equals("PUT")) {
+      return;
+    }
     Optional<String> alias = config.getAliases().keySet().stream()
         .filter(uri -> request.getUri().startsWith(uri))
         .findFirst();
@@ -138,11 +175,8 @@ public class ClientHandler implements Runnable {
     if (request.getUri().startsWith(config.getScriptAlias().route)) {
       this.handleCgi(request, response);
     } else {
-      if (request.getMethod().equals("GET")) {
-        this.handleFiles(request, response);
-      }
+      this.handleFiles(request, response);
 
-      Logger.log(request, response, config);
       response.send();
     }
   }

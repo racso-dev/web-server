@@ -9,9 +9,10 @@ import java.util.Date;
 public class Logger {
   public static void log(Request request, Response response, ServerConfig config) {
     SimpleDateFormat dateFormat = new SimpleDateFormat("d/MMM/YYYY:H:m:s Z");
-    String message = String.format("%s - - [%s] %s %s %d\n", request.getClientIp(), dateFormat.format(new Date()),
+    String bodyLength = response.getBody() == null ? "-" : String.format("%d", response.getBody().length);
+    String message = String.format("%s - - [%s] %s %s %s\n", request.getClientIp(), dateFormat.format(new Date()),
         String.format("\"%s %s %s\"", request.getMethod(), request.getUri(), request.getVersion()),
-        response.getStatusCode(), response.getBody().length);
+        response.getStatusCode(), bodyLength);
     System.out.print(message);
     try {
       Files.write(config.getLogFile(), message.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.APPEND);

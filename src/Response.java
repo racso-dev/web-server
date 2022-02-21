@@ -111,10 +111,10 @@ public class Response {
     out.write(String.format("Server: %s%n", server).getBytes());
     out.write(String.format("Content-Type: %s%n", contentType).getBytes());
     out.write(String.format("Connection: close%n").getBytes());
-    if (body.length > 0) {
+    if (this.body != null) {
       out.write(String.format("Content-Length: %s%n%n", contentLength).getBytes());
+      out.write(body);
     }
-    out.write(body);
 
     try {
       out.write("\r\n".getBytes());
