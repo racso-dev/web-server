@@ -96,7 +96,7 @@ public class ClientHandler implements Runnable {
   private void handleFiles(Request request, Response response) throws IOException {
     String path = this.config.getDocumentRoot().toString() + request.getUri();
     String extension = null;
-    // Check if the file exists
+
     if (!Files.exists(Path.of(path))) {
       response.setStatusCode(Response.statusCodes.get("Not Found")).setBody("<h1>404 Not Found</h1>".getBytes());
       return;

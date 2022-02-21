@@ -61,7 +61,7 @@ public class Request {
     }
     this.parseRequestLine();
     this.parseHeaders();
-    if (!this.method.equals("GET")) {
+    if (this.method.equals("POST") || this.method.equals("PUT")) {
       this.parseBody(input);
     }
   }
