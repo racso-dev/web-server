@@ -71,6 +71,11 @@ public class Request {
         // System.out.println(this.body);
     }
 
+    public Request setUri(String uri) {
+        this.uri = uri;
+        return this;
+
+    }
     // public void logHeaders() {
     //     System.out.println("HEADERS:");
     //     this.headers.entrySet().forEach(entry -> {

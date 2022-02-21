@@ -16,8 +16,10 @@ public class ServerConfig {
   private Path confPath;
 
   private Path documentRoot;
+  private Path serverRoot;
   private int port = -1;
   private Path logFile;
+  private ArrayList<String> directoryIndexes = new ArrayList<String>();
 
   private ScriptAlias scriptAlias = new ScriptAlias();
   private HashMap<String, Path> aliases = new HashMap<String, Path>();
@@ -26,6 +28,7 @@ public class ServerConfig {
 
   private static final ArrayList<String> doubles = new ArrayList<String>() {
     {
+      add("ServerRoot");
       add("DocumentRoot");
       add("Listen");
       add("LogFile");
@@ -60,11 +63,13 @@ public class ServerConfig {
         result = parts[1];
       }
     }
-    if (parts[0].equals(doubles.get(0))) { // DocumentRoot
+    if (parts[0].equals(doubles.get(0))) { // ServerRoot
+      this.serverRoot = Path.of(result);
+    } else if (parts[0].equals(doubles.get(1))) { // DocumentRoot
       this.documentRoot = Path.of(result);
-    } else if (parts[0].equals(doubles.get(1))) { // Listen
+    } else if (parts[0].equals(doubles.get(2))) { // Listen
       this.port = Integer.parseInt(result);
-    } else if (parts[0].equals(doubles.get(2))) { // LogFile
+    } else if (parts[0].equals(doubles.get(3))) { // LogFile
       this.logFile = Path.of(result);
     }
   }
@@ -99,17 +104,23 @@ public class ServerConfig {
     }
   }
 
+  private void parseDirectoryIndex(String[] parts) {
+    for (int i = 1; i < parts.length; i++)
+      this.directoryIndexes.add(parts[i].replace('\"', ' ').trim());
+  }
+
   private void parseFile() throws IOException {
     try (Stream<String> lines = Files.lines(confPath)) {
       lines.forEach(line -> {
         if (!line.startsWith("#") && !line.isEmpty()) {
           String[] parts = line.split("\\s+");
 
-          if (doubles.contains(parts[0])) {
+          if (parts[0].equals("DirectoryIndex")) {
+            this.parseDirectoryIndex(parts);
+          } else if (doubles.contains(parts[0])) {
             parseDouble(parts);
           } else if (triples.contains(parts[0])) {
             parseTriple(parts);
-          } else {
           }
         }
       });
@@ -139,5 +150,13 @@ public class ServerConfig {
   public HashMap<String, String> getMimeTypes() {
     return this.mimeTypes;
   }
+
+  public Path getServerRoot() {
+    return this.serverRoot;
+  }
+
+public ArrayList<String> getDirectoryIndexes() {
+	return this.directoryIndexes;
+}
 
 }
