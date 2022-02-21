@@ -54,11 +54,25 @@ public class ClientHandler implements Runnable {
     Logger.log(request, response, config);
   }
 
-  // private void handlePostRequest(Request request, Response response) {
-  // response.setStatusCode(Response.statusCodes.get("Created")).setBody("<h1>POST
-  // REQUEST</h1>").send();
-  // Logger.log(request, response, config);
-  // }
+  private void handlePostRequest(Request request, Response response) throws IOException {
+    String path = this.config.getDocumentRoot().toString() + request.getUri();
+    String extension = null;
+
+    if (!Files.exists(Path.of(path))) {
+      response.setStatusCode("Not Found").setBody("<h1>404 Not Found</h1>".getBytes());
+      return;
+    }
+    byte[] bytes = Files.readAllBytes(Path.of(path));
+
+    if (path.contains("."))
+      extension = path.substring(path.lastIndexOf(".") + 1);
+
+    response.setBody(bytes)
+        .setStatusCode("OK")
+        .setContentType(this.config.getMimeTypes().get(extension));
+    Logger.log(request, response, config);
+  }
+
   private void handlePutRequest(Request request, Response response) throws IOException {
     String path = this.config.getDocumentRoot().toString() + request.getUri();
 
@@ -97,7 +111,8 @@ public class ClientHandler implements Runnable {
       builder.environment().put("HTTP_" + entry.getKey(), entry.getValue());
     }
     builder.environment().put("QUERY_STRING", request.getQueryString());
-    builder.environment().put("SERVER_PROTOCOL", "HTTP/" + request.getVersion());
+    builder.environment().put("SERVER_PROTOCOL", request.getVersion());
+    builder.environment().put("REQUEST_METHOD", request.getMethod());
 
     Process process = builder.start();
     BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
@@ -146,6 +161,7 @@ public class ClientHandler implements Runnable {
         this.handleGetRequest(request, response);
         break;
       case "POST":
+        this.handlePostRequest(request, response);
         break;
       // case "HEAD":
 

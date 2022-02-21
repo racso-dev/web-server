@@ -1,5 +1,5 @@
 #!/bin/bash
 
-less <&0
+# less <&0
 
-exit 244
+exit 0
