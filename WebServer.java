@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
 
 class WebServer {
   public static final int DEFAULT_PORT = 8080;
-  public static final Path CONF_PATH = Path.of("./conf/httpd.conf");
+  public static final Path CONF_PATH = Path.of("./conf/httpd.test.conf");
   public static final Path MIME_PATH = Path.of("./conf/mime.types");
 
   public static void main(String[] args) throws IOException {

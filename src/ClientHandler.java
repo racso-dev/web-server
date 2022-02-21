@@ -13,7 +13,9 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -30,11 +32,10 @@ public class ClientHandler implements Runnable {
     this.clientIp = clientSocket.getRemoteSocketAddress().toString().replace("/", "").split(":")[0];
   }
 
-  // private void handleHeadRequest(Request request, Response response) {
-  // response.setStatusCode(Response.statusCodes.get("OK")).setBody("<h1>HEAD
-  // REQUEST</h1>").send();
-  // Logger.log(request, response, config);
-  // }
+  private void handleHeadRequest(Request request, Response response) throws IOException {
+    response.setStatusCode(Response.statusCodes.get("OK")).setBody("<h1>HEAD REQUEST</h1>".getBytes()).send();
+  }
+
   private void handleGetRequest(Request request, Response response) throws IOException {
     String path = this.config.getDocumentRoot().toString() + request.getUri();
     String extension = null;
@@ -43,36 +44,29 @@ public class ClientHandler implements Runnable {
       response.setStatusCode("Not Found").setBody("<h1>404 Not Found</h1>".getBytes());
       return;
     }
+    FileTime lastMod = Files.getLastModifiedTime(Path.of(path));
+    // Date fileLastDate = new Date(lastMod.toString());
+    // Date headerLastDate = new Date(request.getHeaders().get("Last-Modified"));
+    // if (request.getHeaders().containsKey("Last-Modified")) {
+    //     if (fileLastDate.compareTo(headerLastDate) == 0) {
+    //         response.setStatusCode(Response.statusCodes.get("Not Modified"));
+    //         return;
+    //     }
+    // }
     byte[] bytes = Files.readAllBytes(Path.of(path));
 
     if (path.contains("."))
       extension = path.substring(path.lastIndexOf(".") + 1);
-
     response.setBody(bytes)
+        .setHeaders("Last-Modified", lastMod.toString())
         .setStatusCode("OK")
         .setContentType(this.config.getMimeTypes().get(extension));
-    Logger.log(request, response, config);
   }
-
+  
   private void handlePostRequest(Request request, Response response) throws IOException {
-    String path = this.config.getDocumentRoot().toString() + request.getUri();
-    String extension = null;
-
-    if (!Files.exists(Path.of(path))) {
-      response.setStatusCode("Not Found").setBody("<h1>404 Not Found</h1>".getBytes());
-      return;
-    }
-    byte[] bytes = Files.readAllBytes(Path.of(path));
-
-    if (path.contains("."))
-      extension = path.substring(path.lastIndexOf(".") + 1);
-
-    response.setBody(bytes)
-        .setStatusCode("OK")
-        .setContentType(this.config.getMimeTypes().get(extension));
-    Logger.log(request, response, config);
+    this.handleGetRequest(request, response);  
   }
-
+  
   private void handlePutRequest(Request request, Response response) throws IOException {
     String path = this.config.getDocumentRoot().toString() + request.getUri();
 
@@ -95,9 +89,7 @@ public class ClientHandler implements Runnable {
       return;
     }
     Files.delete(Path.of(path));
-
     response.setStatusCode("No Content");
-    Logger.log(request, response, config);
   }
 
   private void handleCgi(Request request, Response response) throws IOException {
@@ -135,17 +127,15 @@ public class ClientHandler implements Runnable {
     try {
       process.waitFor();
     } catch (InterruptedException ie) {
-      System.out.println("HERE");
       System.err.println(ie);
-      System.out.println("END");
     }
     int processReturnValue = process.exitValue();
     if (processReturnValue != 0) {
-      response.setStatusCode("Internal Server Error")
+        response.setStatusCode("Internal Server Error")
           .setBody("<h1>Process exited with non-zero exit code</h1>".getBytes());
 
     } else {
-      response.setBody(result.getBytes())
+        response.setBody(result.getBytes())
           .setStatusCode("OK")
           .setContentType(this.config.getMimeTypes().get("html"));
 
@@ -163,17 +153,14 @@ public class ClientHandler implements Runnable {
       case "POST":
         this.handlePostRequest(request, response);
         break;
-      // case "HEAD":
-
-      // break;
       case "PUT":
         this.handlePutRequest(request, response);
         break;
       case "DELETE":
         this.handleDeleteRequest(request, response);
         break;
-
       default:
+        this.handleHeadRequest(request, response);
         break;
     }
   }
@@ -205,13 +192,12 @@ public class ClientHandler implements Runnable {
 
   private void processRequest(Request request, Response response) throws IOException {
     this.handleAliases(request, response);
-    if (request.getUri().startsWith(config.getScriptAlias().route)) {
+    if (request.getUri().startsWith(config.getScriptAlias().route))
       this.handleCgi(request, response);
-    } else {
+    else
       this.handleFiles(request, response);
-
-      response.send();
-    }
+    response.send();
+    Logger.log(request, response, config);
   }
 
   @Override

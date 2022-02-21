@@ -111,6 +111,8 @@ public class Response {
     out.write(String.format("Server: %s%n", server).getBytes());
     out.write(String.format("Content-Type: %s%n", contentType).getBytes());
     out.write(String.format("Connection: close%n").getBytes());
+    for (String key : headers.keySet())
+      out.write(String.format("%s: %s%n", key, headers.get(key)).getBytes());
     if (this.body != null) {
       out.write(String.format("Content-Length: %s%n%n", contentLength).getBytes());
       out.write(body);
