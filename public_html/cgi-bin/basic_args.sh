@@ -1,3 +1,5 @@
 #!/bin/bash
 
-echo 'salut'
+less <&0
+
+exit 0

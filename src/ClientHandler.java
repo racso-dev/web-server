@@ -64,7 +64,14 @@ public class ClientHandler implements Runnable {
       builder.environment().put("SERVER_PROTOCOL", "HTTP/" + request.getVersion());
 
       Process process = builder.start();
+      BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
       BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+      if ((request.getMethod().equals("PUT") || request.getMethod().equals("POST")) &&
+        !request.getBody().isEmpty()) {
+          writer.write(request.getBody());
+          writer.flush();
+          writer.close();
+        }
       while (true) {
         bytesRead = reader.read(output);
         if (bytesRead == -1) {
@@ -85,7 +92,7 @@ public class ClientHandler implements Runnable {
     String path = this.config.getDocumentRoot().toString() + request.getUri();
     String extension = null;
     // Check if the file exists
-    if (!Files.exists(Path.of(path))) { 
+    if (!Files.exists(Path.of(path))) {
       response.setStatusCode(Response.statusCodes.get("Not Found")).setBody("<h1>404 Not Found</h1>".getBytes());
       return;
     }
@@ -93,7 +100,7 @@ public class ClientHandler implements Runnable {
 
     if (path.contains("."))
       extension = path.substring(path.lastIndexOf(".") + 1);
-    
+
     response.setBody(bytes)
       .setStatusCode(Response.statusCodes.get("OK"))
       .setContentType(this.config.getMimeTypes().get(extension));
