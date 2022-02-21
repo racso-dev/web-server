@@ -53,6 +53,7 @@ public class ClientHandler implements Runnable {
         .setContentType(this.config.getMimeTypes().get(extension));
     Logger.log(request, response, config);
   }
+
   // private void handlePostRequest(Request request, Response response) {
   // response.setStatusCode(Response.statusCodes.get("Created")).setBody("<h1>POST
   // REQUEST</h1>").send();
@@ -72,11 +73,11 @@ public class ClientHandler implements Runnable {
     response.setStatusCode("Created");
   }
 
-  private void handleDeleteRequest(Request request, Response response)  throws IOException{
+  private void handleDeleteRequest(Request request, Response response) throws IOException {
     String path = this.config.getDocumentRoot().toString() + request.getUri();
 
     if (!Files.exists(Path.of(path))) {
-      response.setStatusCode(Response.statusCodes.get("Not Found")).setBody("<h1>404 Not Found</h1>".getBytes());
+      response.setStatusCode("Not Found").setBody("<h1>404 Not Found</h1>".getBytes());
       return;
     }
     Files.delete(Path.of(path));
@@ -115,34 +116,50 @@ public class ClientHandler implements Runnable {
         result += new String(output);
       }
     }
-    response.setBody(result.getBytes())
-        .setStatusCode(Response.statusCodes.get("OK"))
-        .setContentType(this.config.getMimeTypes().get("html"));
+    reader.close();
+    try {
+      process.waitFor();
+    } catch (InterruptedException ie) {
+      System.out.println("HERE");
+      System.err.println(ie);
+      System.out.println("END");
+    }
+    int processReturnValue = process.exitValue();
+    if (processReturnValue != 0) {
+      response.setStatusCode("Internal Server Error")
+          .setBody("<h1>Process exited with non-zero exit code</h1>".getBytes());
+
+    } else {
+      response.setBody(result.getBytes())
+          .setStatusCode("OK")
+          .setContentType(this.config.getMimeTypes().get("html"));
+
+    }
     Logger.log(request, response, config);
     response.send();
 
   }
 
   private void handleFiles(Request request, Response response) throws IOException {
-        switch (request.getMethod()) {
-          case "GET":
-            this.handleGetRequest(request, response);
-            break;
-          case "POST":
-            break;
-          // case "HEAD":
-            
-          //   break;
-          case "PUT":
-            this.handlePutRequest(request, response);
-            break;
-          case "DELETE":
-            this.handleDeleteRequest(request, response);
-            break;
-        
-          default:
-            break;
-        }
+    switch (request.getMethod()) {
+      case "GET":
+        this.handleGetRequest(request, response);
+        break;
+      case "POST":
+        break;
+      // case "HEAD":
+
+      // break;
+      case "PUT":
+        this.handlePutRequest(request, response);
+        break;
+      case "DELETE":
+        this.handleDeleteRequest(request, response);
+        break;
+
+      default:
+        break;
+    }
   }
 
   private void handleAliases(Request request, Response response) throws IOException {
