@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -28,10 +29,6 @@ class WebServer {
     }
     serverSocket.close();
 
-    // Path path = Path.of("./conf/mim.types");
-    // MimeParser mimeParser = new MimeParser(path);
-
-    // HashMap<String, String> mimeMap = mimeParser.parseFile();
 
     // System.out.println(mimeMap.toString());
 

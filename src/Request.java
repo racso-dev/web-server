@@ -64,7 +64,6 @@ public class Request {
         }
         this.parseRequestLine();
         this.parseHeaders();
-        this.logHeaders();
         // System.out.println(this.method);
         if (!this.method.equals("GET")) {
             this.parseBody(input);
@@ -72,12 +71,12 @@ public class Request {
         // System.out.println(this.body);
     }
 
-    public void logHeaders() {
-        System.out.println("HEADERS:");
-        this.headers.entrySet().forEach(entry -> {
-            System.out.println(entry.getKey() + " " + entry.getValue());
-        });
-    }
+    // public void logHeaders() {
+    //     System.out.println("HEADERS:");
+    //     this.headers.entrySet().forEach(entry -> {
+    //         System.out.println(entry.getKey() + " " + entry.getValue());
+    //     });
+    // }
     // Getters
     public String getClientIp() {
         return clientIp;
