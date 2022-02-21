@@ -2,10 +2,6 @@ package src;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -14,12 +10,8 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.StringJoiner;
 
 public class ClientHandler implements Runnable {
   protected Socket clientSocket;
@@ -33,7 +25,28 @@ public class ClientHandler implements Runnable {
   }
 
   private void handleHeadRequest(Request request, Response response) throws IOException {
-    response.setStatusCode(Response.statusCodes.get("OK")).setBody("<h1>HEAD REQUEST</h1>".getBytes()).send();
+    String path = this.config.getDocumentRoot().toString() + request.getUri();
+    String extension = null;
+
+    if (!Files.exists(Path.of(path))) {
+      response.setStatusCode("Not Found");
+      return;
+    }
+    FileTime lastMod = Files.getLastModifiedTime(Path.of(path));
+    if (request.getHeaders().containsKey("Last-Modified")) {
+        if (lastMod.toString().compareTo(request.getHeaders().get("Last-Modified")) == 0) {
+            response.setStatusCode("Not Modified");
+            return;
+        }
+    }
+    byte[] bytes = Files.readAllBytes(Path.of(path));
+
+    if (path.contains("."))
+      extension = path.substring(path.lastIndexOf(".") + 1);
+    response.setBody(bytes)
+        .setHeaders("Last-Modified", lastMod.toString())
+        .setStatusCode("OK")
+        .setContentType(this.config.getMimeTypes().get(extension));
   }
 
   private void handleGetRequest(Request request, Response response) throws IOException {
@@ -45,14 +58,12 @@ public class ClientHandler implements Runnable {
       return;
     }
     FileTime lastMod = Files.getLastModifiedTime(Path.of(path));
-    // Date fileLastDate = new Date(lastMod.toString());
-    // Date headerLastDate = new Date(request.getHeaders().get("Last-Modified"));
-    // if (request.getHeaders().containsKey("Last-Modified")) {
-    //     if (fileLastDate.compareTo(headerLastDate) == 0) {
-    //         response.setStatusCode(Response.statusCodes.get("Not Modified"));
-    //         return;
-    //     }
-    // }
+    if (request.getHeaders().containsKey("Last-Modified")) {
+        if (lastMod.toString().compareTo(request.getHeaders().get("Last-Modified")) == 0) {
+            response.setStatusCode("Not Modified");
+            return;
+        }
+    }
     byte[] bytes = Files.readAllBytes(Path.of(path));
 
     if (path.contains("."))
@@ -133,16 +144,11 @@ public class ClientHandler implements Runnable {
     if (processReturnValue != 0) {
         response.setStatusCode("Internal Server Error")
           .setBody("<h1>Process exited with non-zero exit code</h1>".getBytes());
-
     } else {
         response.setBody(result.getBytes())
           .setStatusCode("OK")
           .setContentType(this.config.getMimeTypes().get("html"));
-
     }
-    Logger.log(request, response, config);
-    response.send();
-
   }
 
   private void handleFiles(Request request, Response response) throws IOException {
