@@ -1,6 +1,10 @@
 package src;
 
 import java.io.BufferedWriter;
+import java.io.IOError;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -11,7 +15,8 @@ public class Response {
     private String date;
     private String contentType;
     private String contentLength;
-    private String body = "";
+    private byte[] body;
+    private Socket clientSocket;
     private HashMap<String, String> headers = new HashMap<String, String>();
     private final String version = "1.1";
     private String statusCode;
@@ -28,15 +33,16 @@ public class Response {
     }};
 
     private void setContentLength() {
-        this.contentLength = String.format("%d", this.body.length());
+        this.contentLength = String.format("%d", this.body.length);
     }
 
-    public Response(BufferedWriter output) {
+    public Response(BufferedWriter output, Socket clientSocket) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("E, d MMM YYYY H:m:s z");
 
         this.output = output;
         this.server = "ANTOINE-RENIER";
         this.date = dateFormat.format(new Date());
+        this.clientSocket = clientSocket;
         // this.contentType = contentType;
         // this.contentLength = contentLength;
     }
@@ -58,7 +64,7 @@ public class Response {
         return contentLength;
     }
 
-    public String getBody() {
+    public byte[] getBody() {
         return body;
     }
 
@@ -85,7 +91,7 @@ public class Response {
         return this;
     }
 
-    public Response setBody(String body) {
+    public Response setBody(byte[] body) {
         this.body = body;
         this.setContentLength();
         return this;
@@ -101,21 +107,23 @@ public class Response {
         return this;
     }
 
-    public void send() {
-        String response = String.format("HTTP/%s %s %s\r\n", version, statusCode, statusCodes.get(statusCode));
+    public void send() throws IOException {
+        OutputStream out = clientSocket.getOutputStream();
+        out.write(String.format("HTTP/%s %s %s\n", version, statusCode, statusCodes.get(statusCode)).getBytes());
 
-        response += String.format("Date: %s\r\n", date);
-        response += String.format("Server: %s\r\n", server);
-        response += String.format("Content-Type: %s\r\n", contentType);
-        if (body.length() > 0) {
-            response += String.format("Content-Length: %s\r\n", contentLength);
+        out.write(String.format("Date: %s\n", date).getBytes());
+        out.write(String.format("Server: %s\n", server).getBytes());
+        out.write(String.format("Content-Type: %s\n", contentType).getBytes());
+        out.write(String.format("Connection: close\n").getBytes());
+        if (body.length > 0) {
+            out.write(String.format("Content-Length: %s\n\n", contentLength).getBytes());
         }
-        response += "\r\n";
-        response += body;
+        out.write(body);
+
+        // System.out.println(body);
         try {
-            output.write(response);
-            output.newLine();
-            output.flush();
+            out.write("\r\n".getBytes());
+            out.flush();
         } catch (Exception e) {
             e.printStackTrace();
         }

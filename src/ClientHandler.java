@@ -12,15 +12,19 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Optional;
 
 public class ClientHandler implements Runnable {
   protected Socket clientSocket;
   private ServerConfig config;
   private String clientIp;
+  private HashMap<String, String> mimeMap;
 
-  public ClientHandler(Socket clientSocket, ServerConfig config) {
+  public ClientHandler(Socket clientSocket, ServerConfig config, HashMap<String, String> mimeMap) {
     this.clientSocket = clientSocket;
     this.config = config;
+    this.mimeMap = mimeMap;
     this.clientIp = clientSocket.getRemoteSocketAddress().toString().replace("/", "").split(":")[0];
   }
 
@@ -50,10 +54,18 @@ public class ClientHandler implements Runnable {
       // TODO: write cgi code
     } else {
       if (request.getMethod().equals("GET")) {
-        byte[] bytes = Files.readAllBytes(Path.of(this.config.getDocumentRoot().toString() + request.getUri()));
+        String path = this.config.getDocumentRoot().toString() + request.getUri();
+        String extension = null;
+        byte[] bytes = Files.readAllBytes(Path.of(path));
 
-        response.setBody(new String(bytes, StandardCharsets.UTF_8))
-          .setStatusCode(Response.statusCodes.get("OK"));
+        if (path.contains(".")) {
+          extension = path.substring(path.lastIndexOf(".") + 1);
+        }
+
+
+        response.setBody(bytes)
+          .setStatusCode(Response.statusCodes.get("OK"))
+          .setContentType(this.mimeMap.get(extension));
       }
 
       Logger.log(request, response, config);
@@ -67,7 +79,7 @@ public class ClientHandler implements Runnable {
       BufferedReader input = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
       BufferedWriter output = new BufferedWriter(new OutputStreamWriter(clientSocket.getOutputStream()));
       Request request = new Request(input, this.clientIp);
-      Response response = new Response(output);
+      Response response = new Response(output, clientSocket);
 
       processRequest(request, response);
       clientSocket.close();

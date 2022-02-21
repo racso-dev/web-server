@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -15,6 +16,10 @@ class WebServer {
 
   public static void main(String[] args) throws IOException {
     ServerConfig config = new ServerConfig(CONF_PATH);
+    Path path = Path.of("./conf/mime.types");
+    MimeParser mimeParser = new MimeParser(path);
+
+    HashMap<String, String> mimeMap = mimeParser.parseFile();
 
     ExecutorService threadPool = Executors.newFixedThreadPool(10);
     ServerSocket serverSocket = new ServerSocket(config.getPort() == -1 ? DEFAULT_PORT : config.getPort());
@@ -23,14 +28,10 @@ class WebServer {
     while (!closeServer) {
       Socket clientSocket = null;
       clientSocket = serverSocket.accept();
-      threadPool.execute(new ClientHandler(clientSocket, config));
+      threadPool.execute(new ClientHandler(clientSocket, config, mimeMap));
     }
     serverSocket.close();
 
-    // Path path = Path.of("./conf/mim.types");
-    // MimeParser mimeParser = new MimeParser(path);
-
-    // HashMap<String, String> mimeMap = mimeParser.parseFile();
 
     // System.out.println(mimeMap.toString());
 
