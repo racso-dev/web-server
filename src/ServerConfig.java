@@ -42,6 +42,7 @@ public class ServerConfig {
     MimeParser mimeParser = new MimeParser(mimePath);
     this.mimeTypes = mimeParser.parseFile();
     this.parseFile();
+    System.out.println("\nLoaded configuration:\n" + this.stringify() + "\n");
   }
 
   void parseDouble(String[] parts) {
@@ -124,6 +125,27 @@ public class ServerConfig {
     }
   }
 
+  // Function that return a string with the configuration of the server
+  private String stringify() {
+    StringBuilder sb = new StringBuilder();
+
+    sb.append("ServerRoot: " + this.serverRoot.toString() + "\n");
+    sb.append("DocumentRoot: " + this.documentRoot.toString() + "\n");
+    sb.append("Listen: " + this.port + "\n");
+    sb.append("LogFile: " + this.logFile.toString() + "\n");
+    sb.append("DirectoryIndex: ");
+    for (String index : this.directoryIndexes)
+      sb.append(index + " ");
+    sb.append("\n");
+    sb.append("ScriptAlias: " + this.scriptAlias.route + " " +
+        this.scriptAlias.path.toString() + "\n");
+    for (String key : this.aliases.keySet())
+      sb.append("Alias: " + key + " " + this.aliases.get(key).toString() + "\n");
+    String result = sb.toString();
+    return result.substring(0, result.length() - 1);
+  }
+
+  // Getters
   public Path getDocumentRoot() {
     return this.documentRoot;
   }
